@@ -1,0 +1,9 @@
+name = "notes-to-test-api"
+main = "worker.js"
+compatibility_date = "2025-06-01"
+
+[vars]
+# Your GitHub Pages site address: scheme + host only, no path or trailing slash.
+# Separate several with commas.
+ALLOWED_ORIGINS = "https://YOUR-GITHUB-USERNAME.github.io"
+MODEL = "claude-sonnet-5-5"

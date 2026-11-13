@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Notes to Test</title>
+<meta name="description" content="Turn your study notes into a practice test, then study it as a quiz or flashcards, with a notepad beside you.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%231D6A46'/%3E%3Ctext x='32' y='44' font-family='Georgia,serif' font-size='30' text-anchor='middle' fill='white'%3EA%2B%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Caveat:wght@500;700&family=Young+Serif&display=swap">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="top">
+  <div class="top-in">
+    <div class="brand"><span class="mark">A+</span> Notes to Test</div>
+    <button class="btn sm pad-btn" id="pad-toggle" type="button" aria-pressed="false" aria-controls="notepad">Notepad</button>
+    <nav class="tabs" aria-label="Sections">
+      <button class="tab" data-view="make" id="tab-make">Make a test</button>
+      <button class="tab" data-view="quiz" id="tab-quiz">Quiz</button>
+      <button class="tab" data-view="cards" id="tab-cards">Flashcards</button>
+      <button class="tab" data-view="solutions" id="tab-solutions">Solutions</button>
+      <button class="tab" data-view="library" id="tab-library">My tests</button>
+    </nav>
+  </div>
+</header>
+
+<div class="layout" id="layout">
+<aside class="pad" id="notepad" aria-label="Notepad" hidden>
+  <div class="pad-head">
+    <h2>Notepad</h2>
+    <span class="pad-for" id="pad-for"></span>
+    <button class="icon-btn" id="pad-close" type="button" aria-label="Close notepad">×</button>
+  </div>
+  <label class="sr" for="pad-text">Your notes for this test</label>
+  <textarea class="pad-area" id="pad-text" spellcheck="true" placeholder="Write things to remember: tricky terms, memory tricks, questions for your teacher.&#10;&#10;Tip: tap &quot;Add this question&quot; while you quiz."></textarea>
+  <div class="pad-foot" id="pad-foot">
+    <span class="pad-status" id="pad-status">0 words</span>
+    <button class="btn sm" id="pad-add" type="button" hidden>Add this question</button>
+    <button class="btn sm ghost" id="pad-copy" type="button">Copy</button>
+    <button class="btn sm ghost danger" id="pad-clear" type="button">Clear</button>
+  </div>
+  <div class="pad-foot confirm" id="pad-confirm" hidden>
+    <span style="margin-right:auto">Clear all notes for this test?</span>
+    <button class="btn sm danger" id="pad-clear-yes" type="button">Clear</button>
+    <button class="btn sm ghost" id="pad-clear-no" type="button">Keep</button>
+  </div>
+</aside>
+<main class="wrap">
+  <div class="current" id="current"></div>
+
+  <!-- MAKE -->
+  <section class="view" id="view-make" hidden>
+    <div>
+      <h1 class="page-title">Turn your notes into a practice test</h1>
+      <p class="lede" style="margin-top:8px">Upload photos of your study guide, a PDF or a Word file, or paste your notes. Claude writes the questions, then you take them as a quiz or study them as flashcards.</p>
+    </div>
+
+    <div class="sheet" id="connect" hidden>
+      <div class="eyebrow">Connect Claude</div>
+      <p>This site uses Claude to write your tests, through your own Anthropic API key. Your key stays in this browser and is sent only to Anthropic.</p>
+      <div class="reuse" id="key-set" hidden>
+        <p>Connected with the key ending <strong id="key-tail"></strong>.</p>
+        <button class="btn ghost" id="key-remove" type="button">Remove key</button>
+      </div>
+      <div class="field" id="key-form">
+        <label for="api-key">Anthropic API key</label>
+        <div class="key-row">
+          <input type="password" id="api-key" autocomplete="off" spellcheck="false" placeholder="sk-ant-…">
+          <button class="btn primary" id="key-save" type="button">Save key</button>
+        </div>
+        <label class="check" for="key-remember"><input type="checkbox" id="key-remember" checked> Remember on this device</label>
+        <p class="help">Get a key at <a href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener">console.anthropic.com</a>. Each test is billed to that key's account. On a shared computer, uncheck "Remember on this device".</p>
+        <div class="error" id="key-error" hidden></div>
+      </div>
+    </div>
+
+    <div class="sheet">
+      <div class="eyebrow">1 · Your notes</div>
+      <div class="reuse" id="reuse" hidden>
+        <p id="reuse-text"></p>
+        <button class="btn ghost" id="reuse-clear" type="button">Use other notes</button>
+      </div>
+      <label class="drop" id="drop" for="file-input">
+        <span class="drop-title">Drop files here or choose files</span>
+        <small>Photos (JPG, PNG), PDF, Word (.docx) or text files</small>
+        <span class="btn" aria-hidden="true">Choose files</span>
+      </label>
+      <input type="file" id="file-input" class="sr" multiple accept="image/*,.pdf,.docx,.txt,.md,.csv,text/plain,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document">
+      <ul class="files" id="files"></ul>
+      <details class="paste" id="paste-box">
+        <summary>Or paste your notes as text</summary>
+        <textarea id="paste" placeholder="Paste notes, a study guide, or a list of terms and definitions" style="margin-top:10px"></textarea>
+      </details>
+    </div>
+
+    <div class="sheet">
+      <div class="eyebrow">2 · Your test</div>
+      <div class="settings-grid">
+        <div class="field">
+          <span class="label" id="count-label">Number of questions</span>
+          <div class="count-row">
+            <div class="chips" id="count-chips" role="group" aria-labelledby="count-label"></div>
+            <input type="number" id="count" min="5" max="60" value="20" aria-labelledby="count-label">
+          </div>
+        </div>
+        <div class="field">
+          <span class="label" id="diff-label">Difficulty</span>
+          <div class="chips" id="diff-chips" role="group" aria-labelledby="diff-label"></div>
+        </div>
+        <div class="field wide">
+          <span class="label" id="style-label">Question types</span>
+          <div class="chips" id="style-chips" role="group" aria-labelledby="style-label"></div>
+        </div>
+        <div class="field wide">
+          <label for="focus">Anything to focus on? <span style="font-weight:400;color:var(--muted)">(optional)</span></label>
+          <textarea id="focus" style="min-height:70px" placeholder="e.g. Add a few questions on where each muscle is located"></textarea>
+        </div>
+      </div>
+      <div class="error" id="make-error" hidden></div>
+      <div class="status-box" id="gen-status" hidden>
+        <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center">
+          <strong id="gen-label">Reading your notes…</strong>
+          <button class="btn ghost" id="gen-stop" type="button">Stop</button>
+        </div>
+        <div class="bar"><span id="gen-bar"></span></div>
+        <small style="color:var(--muted)" id="gen-sub">This usually takes 1 to 2 minutes for every 15 questions.</small>
+      </div>
+      <div class="btn-row">
+        <button class="btn primary" id="generate" type="button">Make my test</button>
+        <span class="kbd" id="gen-hint"></span>
+      </div>
+    </div>
+  </section>
+
+  <!-- QUIZ -->
+  <section class="view" id="view-quiz" hidden></section>
+
+  <!-- FLASHCARDS -->
+  <section class="view" id="view-cards" hidden></section>
+
+  <!-- SOLUTIONS -->
+  <section class="view" id="view-solutions" hidden>
+    <div class="view-stack" id="sol-new">
+      <div>
+        <h1 class="page-title">Answers for your worksheet</h1>
+        <p class="lede" style="margin-top:8px">Upload a worksheet, homework sheet or review packet. Claude finds each question and works out the answer with a short explanation. If answers are already written on the sheet, Claude checks them too.</p>
+      </div>
+
+      <div class="sheet">
+        <div class="eyebrow">1 · Your worksheet</div>
+        <label class="drop" id="sol-drop" for="sol-file-input">
+          <span class="drop-title">Drop the worksheet here or choose files</span>
+          <small>Photos (JPG, PNG), PDF, Word (.docx) or text files. Add every page.</small>
+          <span class="btn" aria-hidden="true">Choose files</span>
+        </label>
+        <input type="file" id="sol-file-input" class="sr" multiple accept="image/*,.pdf,.docx,.txt,.md,.csv,text/plain,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document">
+        <ul class="files" id="sol-files"></ul>
+        <details class="paste" id="sol-paste-box">
+          <summary>Or paste the questions as text</summary>
+          <textarea id="sol-paste" placeholder="Paste the questions, one per line" style="margin-top:10px"></textarea>
+        </details>
+      </div>
+
+      <div class="sheet">
+        <div class="eyebrow">2 · How to show the answers</div>
+        <div class="settings-grid">
+          <div class="field">
+            <span class="label" id="sol-detail-label">Detail</span>
+            <div class="chips" id="sol-detail-chips" role="group" aria-labelledby="sol-detail-label"></div>
+          </div>
+          <div class="field">
+            <span class="label" id="sol-reveal-label">Answers</span>
+            <div class="chips" id="sol-reveal-chips" role="group" aria-labelledby="sol-reveal-label"></div>
+          </div>
+        </div>
+        <div class="error" id="sol-error" hidden></div>
+        <div class="status-box" id="sol-status" hidden>
+          <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center">
+            <strong id="sol-label">Reading your worksheet…</strong>
+            <button class="btn ghost" id="sol-stop" type="button">Stop</button>
+          </div>
+          <div class="bar"><span id="sol-bar"></span></div>
+          <small style="color:var(--muted)" id="sol-sub"></small>
+        </div>
+        <div class="btn-row">
+          <button class="btn primary" id="sol-go" type="button">Find the answers</button>
+          <span class="kbd" id="sol-hint"></span>
+        </div>
+      </div>
+
+      <div class="sheet">
+        <h2 style="font-size:1.3rem">Your answer sheets</h2>
+        <div class="sol-saved" id="sol-saved"></div>
+      </div>
+    </div>
+    <div class="view-stack" id="sol-open" hidden></div>
+  </section>
+
+  <!-- LIBRARY -->
+  <section class="view" id="view-library" hidden></section>
+</main>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="config.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
